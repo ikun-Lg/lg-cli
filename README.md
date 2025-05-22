@@ -13,9 +13,9 @@
 ## 安装
 
 ```bash
-npm install lg-cli -g
+npm install lggbond-cli -g
 # 或者使用 pnpm
-pnpm add lg-cli -g
+pnpm add lggbond-cli -g
 ```
 
 ## 使用方法
