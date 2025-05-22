@@ -1,15 +1,23 @@
 {
   "name": "lg-cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c rollup.config.js --bundleConfigAsCjs"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["vite","React","TS"],
+  "author": "lggbond",
   "license": "ISC",
-  "description": "",
+  "bin": {
+    "lg":"bin/index.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "description": "lg-cli 脚手架",
   "devDependencies": {
     "@inquirer/prompts": "^7.5.1",
     "@rollup/plugin-commonjs": "^28.0.3",
