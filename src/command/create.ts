@@ -3,6 +3,10 @@ import { clone } from "../utils/clone";
 import path from "path";
 import fs from "fs-extra";
 import chalk from "chalk";
+import { name, version } from "../../package.json";
+import axios, { AxiosResponse } from "axios";
+import { gt } from "lodash";
+
 export interface TemplateInfo {
   name: string; //模板名称
   downloadUrl: string; // 模板下载地址
@@ -32,7 +36,7 @@ export const templates: Map<string, TemplateInfo> = new Map([
 ]);
 
 export function isOverwrite(fileName: string) {
-  console.warn(chalk.green(fileName)+"文件夹存在");
+  console.warn(chalk.green(fileName) + "文件夹存在");
   return select({
     message: "是否覆盖？",
     choices: [
@@ -48,20 +52,56 @@ export function isOverwrite(fileName: string) {
   });
 }
 
+export const getNpmInfo = async (npmName: string) => {
+  const npmUrl = `https://registry.npmjs.org/${name}`;
+  let res = {};
+  try {
+    res = await axios.get(npmUrl);
+  } catch (error) {
+    console.error(error);
+  }
+  return res;
+};
+
+export const getNpmLatestVersion = async (name: string) => {
+  const { data } = (await getNpmInfo(name)) as AxiosResponse;
+  // console.log('data', data);
+  return data["dist-tags"].latest;
+};
+
+export const checkVersion = async (name: string, version: string) => {
+  const latestVersion = await getNpmLatestVersion(name);
+  const need = gt(latestVersion, version);
+  if (need) {
+    console.log(
+      chalk.yellow(
+        `当前版本：${version}，最新版本：${latestVersion}，请及时更新`
+      )
+    );
+    console.log(
+      `可使用: npm i -g ${name}@latest` +
+        ` 或 yarn global add ${name}@latest` +
+        ` 或 pnpm add -g ${name}@latest` +
+        ` 或 lg update` +
+        ` 更新`
+    );
+  }
+};
+
 export async function create(projectName?: string) {
   if (!projectName) {
     projectName = await input({
       message: "请输入项目名称",
     });
   }
-  
+
   // 如果文件夹已经存在
   const filePath = path.resolve(process.cwd(), projectName);
   if (fs.existsSync(filePath)) {
     const run = await isOverwrite(projectName);
     if (run) {
       await fs.remove(filePath);
-    }else{
+    } else {
       return; // 不覆盖直接结束
     }
   }
@@ -77,7 +117,9 @@ export async function create(projectName?: string) {
       };
     }
   );
-  
+
+  // 检测版本更新
+  await checkVersion(name, version);
 
   const templateName = await select({
     message: "请选择模板",
@@ -87,5 +129,5 @@ export async function create(projectName?: string) {
   if (info) {
     clone(info.downloadUrl, projectName, ["-b", info.branch]);
   }
-  console.log(info);
+  // console.log(info);
 }
